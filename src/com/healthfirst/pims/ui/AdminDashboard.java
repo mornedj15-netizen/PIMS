@@ -26,8 +26,8 @@ public class AdminDashboard extends JFrame {
         setLocationRelativeTo(null);
 
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Manage Medicines", buildPlaceholder("Medicine CRUD table + form goes here"));
-        tabs.addTab("Manage Suppliers", buildPlaceholder("Supplier CRUD table + form goes here"));
+        tabs.addTab("Manage Medicines", new ManageMedicinesPanel());
+        tabs.addTab("Manage Suppliers", new ManageSuppliersPanel());
         tabs.addTab("Manage Users", buildPlaceholder("User CRUD table + form goes here"));
         tabs.addTab("Reports", buildPlaceholder("Sales / Item-Wise / Low Stock / Expiry reports go here"));
 
