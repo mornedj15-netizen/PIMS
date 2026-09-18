@@ -21,7 +21,8 @@ public class ManageMedicinesPanel extends JPanel {
     private final MedicineDAO medicineDAO = new MedicineDAO();
 
     private final DefaultTableModel tableModel = new DefaultTableModel(
-            new String[]{"ID", "Name", "Company", "Type", "Price", "Qty", "Reorder Lvl", "Expiry", "Supplier ID"}, 0) {
+            new String[] { "ID", "Name", "Company", "Type", "Price", "Qty", "Reorder Lvl", "Expiry", "Supplier ID" },
+            0) {
         @Override
         public boolean isCellEditable(int row, int column) {
             return false; // table is read-only; edits happen through the form
@@ -36,7 +37,8 @@ public class ManageMedicinesPanel extends JPanel {
     private final JTextField quantityField = new JTextField(6);
     private final JTextField reorderField = new JTextField(6);
     private final JTextField expiryField = new JTextField(10); // yyyy-MM-dd
-    private final JTextField supplierIdField = new JTextField(6);
+    private final com.healthfirst.pims.dao.SupplierDAO supplierDAO = new com.healthfirst.pims.dao.SupplierDAO();
+    private final JComboBox<com.healthfirst.pims.model.Supplier> supplierCombo = new JComboBox<>();
 
     private final JLabel statusLabel = new JLabel(" ");
     private int selectedMedicineId = -1;
@@ -46,13 +48,15 @@ public class ManageMedicinesPanel extends JPanel {
 
         table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         table.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) loadSelectedRowIntoForm();
+            if (!e.getValueIsAdjusting())
+                loadSelectedRowIntoForm();
         });
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         add(buildFormPanel(), BorderLayout.SOUTH);
 
         refreshTable();
+
     }
 
     private JPanel buildFormPanel() {
@@ -70,7 +74,7 @@ public class ManageMedicinesPanel extends JPanel {
         addField(form, gbc, row++, "Quantity in Stock:", quantityField);
         addField(form, gbc, row++, "Reorder Level:", reorderField);
         addField(form, gbc, row++, "Expiry Date (yyyy-MM-dd):", expiryField);
-        addField(form, gbc, row++, "Supplier ID:", supplierIdField);
+        addField(form, gbc, row++, "Supplier:", supplierCombo);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton addButton = new JButton("Add");
@@ -100,7 +104,7 @@ public class ManageMedicinesPanel extends JPanel {
         return form;
     }
 
-    private void addField(JPanel form, GridBagConstraints gbc, int row, String label, JTextField field) {
+    private void addField(JPanel form, GridBagConstraints gbc, int row, String label, JComponent field) {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.gridwidth = 1;
@@ -109,12 +113,23 @@ public class ManageMedicinesPanel extends JPanel {
         form.add(field, gbc);
     }
 
+    private void loadSuppliersIntoCombo() {
+        try {
+            supplierCombo.removeAllItems();
+            for (com.healthfirst.pims.model.Supplier s : supplierDAO.getAll()) {
+                supplierCombo.addItem(s);
+            }
+        } catch (SQLException e) {
+            statusLabel.setText("Failed to load suppliers: " + e.getMessage());
+        }
+    }
+
     private void refreshTable() {
         try {
             tableModel.setRowCount(0);
             List<Medicine> medicines = medicineDAO.getAll();
             for (Medicine m : medicines) {
-                tableModel.addRow(new Object[]{
+                tableModel.addRow(new Object[] {
                         m.getMedicineId(), m.getName(), m.getCompany(), m.getMedicineType(),
                         m.getPrice(), m.getQuantityInStock(), m.getReorderLevel(),
                         m.getExpiryDate(), m.getSupplierId()
@@ -128,7 +143,8 @@ public class ManageMedicinesPanel extends JPanel {
 
     private void loadSelectedRowIntoForm() {
         int row = table.getSelectedRow();
-        if (row == -1) return;
+        if (row == -1)
+            return;
 
         selectedMedicineId = (int) tableModel.getValueAt(row, 0);
         nameField.setText(String.valueOf(tableModel.getValueAt(row, 1)));
@@ -138,7 +154,13 @@ public class ManageMedicinesPanel extends JPanel {
         quantityField.setText(String.valueOf(tableModel.getValueAt(row, 5)));
         reorderField.setText(String.valueOf(tableModel.getValueAt(row, 6)));
         expiryField.setText(String.valueOf(tableModel.getValueAt(row, 7)));
-        supplierIdField.setText(String.valueOf(tableModel.getValueAt(row, 8)));
+        int supplierId = (int) tableModel.getValueAt(row, 8);
+        for (int i = 0; i < supplierCombo.getItemCount(); i++) {
+            if (supplierCombo.getItemAt(i).getSupplierId() == supplierId) {
+                supplierCombo.setSelectedIndex(i);
+                break;
+            }
+        }
     }
 
     private void clearForm() {
@@ -150,14 +172,16 @@ public class ManageMedicinesPanel extends JPanel {
         quantityField.setText("");
         reorderField.setText("");
         expiryField.setText("");
-        supplierIdField.setText("");
+        if (supplierCombo.getItemCount() > 0)
+            supplierCombo.setSelectedIndex(0);
         table.clearSelection();
         statusLabel.setText(" ");
     }
 
     private void handleAdd() {
         Medicine m = readFormOrShowError();
-        if (m == null) return;
+        if (m == null)
+            return;
 
         try {
             medicineDAO.add(m);
@@ -174,7 +198,8 @@ public class ManageMedicinesPanel extends JPanel {
             return;
         }
         Medicine m = readFormOrShowError();
-        if (m == null) return;
+        if (m == null)
+            return;
         m.setMedicineId(selectedMedicineId);
 
         try {
@@ -194,7 +219,8 @@ public class ManageMedicinesPanel extends JPanel {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Delete this medicine? This cannot be undone.",
                 "Confirm Delete", JOptionPane.YES_NO_OPTION);
-        if (confirm != JOptionPane.YES_OPTION) return;
+        if (confirm != JOptionPane.YES_OPTION)
+            return;
 
         try {
             medicineDAO.delete(selectedMedicineId);
@@ -205,7 +231,10 @@ public class ManageMedicinesPanel extends JPanel {
         }
     }
 
-    /** Validates and builds a Medicine from the form, or shows an error and returns null. */
+    /**
+     * Validates and builds a Medicine from the form, or shows an error and returns
+     * null.
+     */
     private Medicine readFormOrShowError() {
         try {
             String name = nameField.getText().trim();
@@ -215,7 +244,13 @@ public class ManageMedicinesPanel extends JPanel {
             int quantity = Integer.parseInt(quantityField.getText().trim());
             int reorderLevel = Integer.parseInt(reorderField.getText().trim());
             LocalDate expiry = LocalDate.parse(expiryField.getText().trim());
-            int supplierId = Integer.parseInt(supplierIdField.getText().trim());
+            com.healthfirst.pims.model.Supplier selectedSupplier = (com.healthfirst.pims.model.Supplier) supplierCombo
+                    .getSelectedItem();
+            if (selectedSupplier == null) {
+                statusLabel.setText("Add a supplier first (Manage Suppliers tab), then try again.");
+                return null;
+            }
+            int supplierId = selectedSupplier.getSupplierId();
 
             if (name.isEmpty()) {
                 statusLabel.setText("Name is required.");
