@@ -25,8 +25,7 @@ public class CashierDashboard extends JFrame {
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Point of Sale", new PointOfSalePanel(currentUser));
-        tabs.addTab("Stock Check", buildPlaceholder("Read-only medicine lookup goes here"));
-
+        tabs.addTab("Stock Check", new StockCheckPanel());
         add(tabs);
     }
 
