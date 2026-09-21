@@ -24,7 +24,7 @@ public class CashierDashboard extends JFrame {
         setLocationRelativeTo(null);
 
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Point of Sale", buildPlaceholder("Cart + checkout + bill window goes here"));
+        tabs.addTab("Point of Sale", new PointOfSalePanel(currentUser));
         tabs.addTab("Stock Check", buildPlaceholder("Read-only medicine lookup goes here"));
 
         add(tabs);
