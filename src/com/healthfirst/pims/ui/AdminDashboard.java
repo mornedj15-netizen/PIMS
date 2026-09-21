@@ -29,7 +29,7 @@ public class AdminDashboard extends JFrame {
         tabs.addTab("Manage Medicines", new ManageMedicinesPanel());
         tabs.addTab("Manage Suppliers", new ManageSuppliersPanel());
         tabs.addTab("Manage Users", new ManageUsersPanel());
-        tabs.addTab("Reports", buildPlaceholder("Sales / Item-Wise / Low Stock / Expiry reports go here"));
+        tabs.addTab("Reports", new ReportsPanel());
 
         add(tabs);
     }
